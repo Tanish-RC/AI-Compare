@@ -31,7 +31,7 @@
 //     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 //   };
 
-//   const API_KEY = "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";
+//  
 
 
 //     async function uploadFileToOpenAI(file) {
