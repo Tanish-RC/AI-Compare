@@ -665,7 +665,7 @@ import {
 export default function MultiFileUpload({results, setResults}) {
   const [files, setFiles] = useState([]);
   const [prompt, setPrompt] = useState(
-    "Please analyze this document and provide a summary."
+    ""
   );
   const [isProcessing, setIsProcessing] = useState(false);
   // const [results, setResults] = useState([]); // stores per-file results
