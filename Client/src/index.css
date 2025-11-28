@@ -58,18 +58,31 @@
   }
 }
 
-/* Other custom styles */
+
+
+/* .run-modal > * {
+  height: 100%;
+} */
+
 .run-modal {
   width: 95vw !important;
-  height: 95vh !important;
   max-width: 95vw !important;
-  max-height: 95vh !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
+
   display: flex;
   flex-direction: column;
 }
 
-.run-modal > * {
+/* REMOVE this */
+/* .run-modal > * {
   height: 100%;
+} */
+
+/* Scrollable middle section */
+.run-modal .scroll-area {
+  flex: 1;
+  overflow: auto;
 }
 
 .prompt-preview-wrapper {
