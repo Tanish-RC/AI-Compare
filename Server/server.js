@@ -1,111 +1,93 @@
 
-
-// import express from "express";
-// import cors from "cors";
-// import fs from "fs";
-// import dotenv from "dotenv";
-
-// // Import routes
-// import openaiRoutes from "./routes/openaiRoute.js";
-// import claudeRoutes from "./routes/claudeRoute.js";
-// import geminiRoutes from "./routes/geminiRoute.js";
-
-// dotenv.config();
-
-// const app = express();
-// const PORT = 8081;
-
-// // Middleware
-// app.use(cors());
-// app.use(express.json({ limit: "100mb" }));
-
-// // Load prompt from file
-// let defaultPrompt = "";
-// try {
-//   defaultPrompt = fs.readFileSync("./prompt.txt", "utf8");
-//   console.log("✅ Prompt loaded from prompt.txt");
-// } catch (err) {
-//   console.error("⚠️ Could not load prompt.txt:", err.message);
-// }
-// // console.log(defaultPrompt)
-
-// console.log(process.env.OPENAI_API_KEY);
-// // Attach prompt to all requests
-// app.use((req, res, next) => {
-//   req.defaultPrompt = defaultPrompt;
-//   next();
-// });
-// // Routes
-// app.use("/api/openai", openaiRoutes);
-// app.use("/api/claude", claudeRoutes);
-// app.use("/api/gemini", geminiRoutes);
-
-// // Root endpoint
-// app.get("/", (req, res) => {
-//   res.json({ status: "ok", message: "Server running on port 8081" });
-// });
-
-// // Start server
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running on http://localhost:${PORT}`);
-// });
-
-
-import express from "express";
-import cors from "cors";
-import fs from "fs";
-import path from "path";
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import connectDB from './config/db.js';
+import clientRoutes from './routes/api/clients.js';
 
 // Import routes
-import openaiRoutes from "./routes/openaiRoute.js";
-import claudeRoutes from "./routes/claudeRoute.js";
-import geminiRoutes from "./routes/geminiRoute.js";
-
-// Setup environment
-dotenv.config();
+import openaiRoutes from './routes/openaiRoute.js';
+import claudeRoutes from './routes/claudeRoute.js';
+import geminiRoutes from './routes/geminiRoute.js';
+import chartRoutes from './routes/api/charts.js';
 
 // Initialize app
 const app = express();
 const PORT = process.env.PORT || 8081;
 
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: "100mb" }));
-
-// Get the current directory (works in ES modules)
+// Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Load prompt safely using absolute path
-let defaultPrompt = "";
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '100mb' }));
+
+// Load prompt from file
+let defaultPrompt = '';
 try {
-  const promptPath = path.join(__dirname, "prompt.txt");
-  defaultPrompt = fs.readFileSync(promptPath, "utf8");
-  console.log("✅ Prompt loaded from:", promptPath);
-  console.log("Prompt Preview:", defaultPrompt.substring(0, 100) + "...");
+  defaultPrompt = await fs.readFile(path.join(__dirname, 'prompt.txt'), 'utf8');
+  console.log('✅ Prompt loaded from prompt.txt');
 } catch (err) {
-  console.error("⚠️ Could not load prompt.txt:", err.message);
+  console.error('⚠️ Could not load prompt.txt:', err.message);
 }
-console.log(defaultPrompt)
+
 // Attach prompt to all requests
 app.use((req, res, next) => {
   req.defaultPrompt = defaultPrompt;
   next();
 });
 
-// Routes
-app.use("/api/openai", openaiRoutes);
-app.use("/api/claude", claudeRoutes);
-app.use("/api/gemini", geminiRoutes);
+
+app.use('/api/clients', clientRoutes);
+app.use('/api/charts', chartRoutes);
+ 
+// API Routes
+app.use('/api/openai', openaiRoutes);
+app.use('/api/claude', claudeRoutes);
+app.use('/api/gemini', geminiRoutes);
 
 // Root endpoint
-app.get("/", (req, res) => {
-  res.json({ status: "ok", message: "Server running on port " + PORT });
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: `Server running on port ${PORT}`,
+    endpoints: [
+      '/api/openai - OpenAI API endpoints',
+      '/api/claude - Claude API endpoints',
+      '/api/gemini - Gemini API endpoints',
+      '/api/charts - Charts CRUD operations'
+    ]
+  });
 });
 
+// Error handling middleware
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).json({ 
+//     error: 'Something went wrong!',
+//     message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+//   });
+// });
+
+
+
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at: http://localhost:${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
 });
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+  console.error(`Error: ${err.message}`);
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
+
+export default server;

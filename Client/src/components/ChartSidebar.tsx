@@ -1,146 +1,542 @@
-import { Chart } from "@/types/chart";
-import { FileText, Filter, Upload, RefreshCw, ChevronLeft } from "lucide-react";
+// import { FileText, RefreshCw } from "lucide-react";
+// import { cn } from "@/lib/utils";
+// import { Checkbox } from "@/components/ui/checkbox";
+// import { Button } from "@/components/ui/button";
+// import {
+//   TooltipProvider,
+//   Tooltip,
+//   TooltipTrigger,
+//   TooltipContent,
+// } from "@/components/ui/tooltip";
+
+// export default function ChartSidebar({
+//   charts = [],
+//   selectedChartId,
+//   selectedChartIds = [],
+//   onSelectChart,
+//   onToggleChartSelection,
+//   onSelectAllCharts,
+//   onRerunAllCharts,   // ✅ new prop
+// }) {
+//   const allSelected =
+//     charts.length > 0 && charts.every((chart) => selectedChartIds.includes(chart.id));
+
+//   return (
+//     <TooltipProvider>
+//       <div className="h-full flex flex-col bg-white border-r overflow-hidden">
+        
+//         {/* Header */}
+//         <div className="flex items-center justify-between bg-indigo-50 border-b p-2 pr-3">
+//           <h2 className="text-sm font-semibold text-indigo-800 tracking-wide">
+//             Charts
+//           </h2>
+
+//           {onRerunAllCharts && (
+//             <Button
+//               variant="ghost"
+//               size="sm"
+//               className="h-7 px-2 flex items-center gap-1 text-xs"
+//               onClick={onRerunAllCharts}
+//             >
+//               <RefreshCw className="w-3 h-3" />
+//               Rerun
+//             </Button>
+//           )}
+//         </div>
+
+//         {/* Select All */}
+//         <div className="p-3 border-b bg-gray-50 flex items-center gap-2">
+//           <Checkbox
+//             checked={allSelected}
+//             onCheckedChange={(checked) => onSelectAllCharts?.(!!checked)}
+//           />
+//           <span className="text-sm text-gray-700">Select All</span>
+//         </div>
+
+//         {/* Chart List */}
+//         <div className="flex-1 overflow-y-auto">
+//           {charts.length === 0 ? (
+//             <p className="text-sm text-gray-500 p-4">No charts found.</p>
+//           ) : (
+//             charts.map((chart) => {
+//               const isSelected = selectedChartIds.includes(chart.id);
+//               const uploadDate = chart.createdAt
+//                 ? new Date(chart.createdAt).toLocaleString()
+//                 : "";
+
+//               return (
+//                 <div
+//                   key={chart.id}
+//                   className={cn(
+//                     "px-3 py-2 flex items-start gap-2 border-b cursor-pointer transition-all hover:bg-indigo-50",
+//                     selectedChartId === chart.id &&
+//                       "bg-indigo-50 border-l-2 border-indigo-500"
+//                   )}
+//                   onClick={() => onSelectChart?.(chart.id)}
+//                 >
+//                   <Checkbox
+//                     checked={isSelected}
+//                     onCheckedChange={() => onToggleChartSelection?.(chart.id)}
+//                     onClick={(e) => e.stopPropagation()}
+//                     className="mt-0.5"
+//                   />
+
+//                   <div className="flex-1 flex flex-col items-start gap-1">
+//                     <div className="flex items-center gap-2">
+//                       <FileText className="w-4 h-4 text-gray-500" />
+//                       <span className="text-sm font-medium text-gray-800 truncate">
+//                         {chart.name}
+//                       </span>
+//                     </div>
+//                     {uploadDate && (
+//                       <span className="text-xs text-gray-500 truncate">
+//                         {uploadDate}
+//                       </span>
+//                     )}
+//                   </div>
+//                 </div>
+//               );
+//             })
+//           )}
+//         </div>
+//       </div>
+//     </TooltipProvider>
+//   );
+// }
+
+
+// import { useState } from "react";
+// import { FileText, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+// import { cn } from "@/lib/utils";
+// import { Checkbox } from "@/components/ui/checkbox";
+// import { Button } from "@/components/ui/button";
+// import {
+//   TooltipProvider,
+//   Tooltip,
+//   TooltipTrigger,
+//   TooltipContent,
+// } from "@/components/ui/tooltip";
+
+// export default function ChartSidebar({
+//   charts = [],
+//   selectedChartId,
+//   selectedChartIds = [],
+//   onSelectChart,
+//   onToggleChartSelection,
+//   onSelectAllCharts,
+//   onRerunAllCharts,
+// }) {
+//   const [collapsed, setCollapsed] = useState(false);
+
+//   const allSelected =
+//     charts.length > 0 && charts.every((chart) => selectedChartIds.includes(chart.id));
+
+//   return (
+//     <TooltipProvider>
+//       <div
+//         className={cn(
+//           "h-full flex flex-col bg-white border-r transition-all duration-300 ease-in-out relative",
+//           collapsed ? "w-12" : "w-full"
+//         )}
+//       >
+//         {/* ⭐ Collapse button on left side, not overlapping anything */}
+//         <button
+//           onClick={() => setCollapsed(!collapsed)}
+//           className="
+//             absolute left-2 top-2
+//             w-6 h-6 rounded-md bg-white border border-gray-300 shadow-sm
+//             flex items-center justify-center hover:bg-gray-100 z-10
+//           "
+//         >
+//           {collapsed ? (
+//             <ChevronRight className="h-4 w-4 text-gray-600" />
+//           ) : (
+//             <ChevronLeft className="h-4 w-4 text-gray-600" />
+//           )}
+//         </button>
+
+//         {/* Collapsed View */}
+//         {collapsed && (
+//           <div className="flex flex-col items-center justify-center pt-12">
+//             <FileText className="w-5 h-5 text-gray-600 mb-2" />
+//             <div className="-rotate-90 font-semibold text-xs text-gray-600">
+//               Charts
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Expanded View */}
+//         {!collapsed && (
+//           <>
+//             {/* Header */}
+//             <div className="flex items-center justify-between bg-indigo-50 border-b p-2 pr-3 pl-10">
+//               {/* pl-10 ensures space so collapse button doesn't overlap text */}
+//               <h2 className="text-sm font-semibold text-indigo-800 tracking-wide">
+//                 Charts
+//               </h2>
+
+//               {onRerunAllCharts && (
+//                 <Button
+//                   variant="ghost"
+//                   size="sm"
+//                   className="h-7 px-2 flex items-center gap-1 text-xs"
+//                   onClick={onRerunAllCharts}
+//                 >
+//                   <RefreshCw className="w-3 h-3" />
+//                   Rerun
+//                 </Button>
+//               )}
+//             </div>
+
+//             {/* Select All */}
+//             <div className="p-3 border-b bg-gray-50 flex items-center gap-2">
+//               <Checkbox
+//                 checked={allSelected}
+//                 onCheckedChange={(checked) => onSelectAllCharts?.(!!checked)}
+//               />
+//               <span className="text-sm text-gray-700">Select All</span>
+//             </div>
+
+//             {/* Chart List */}
+//             <div className="flex-1 overflow-y-auto">
+//               {charts.length === 0 ? (
+//                 <p className="text-sm text-gray-500 p-4">No charts found.</p>
+//               ) : (
+//                 charts.map((chart) => {
+//                   const isSelected = selectedChartIds.includes(chart.id);
+//                   const uploadDate = chart.createdAt
+//                     ? new Date(chart.createdAt).toLocaleString()
+//                     : "";
+
+//                   return (
+//                     <div
+//                       key={chart.id}
+//                       className={cn(
+//                         "px-3 py-2 flex items-start gap-2 border-b cursor-pointer transition-all hover:bg-indigo-50",
+//                         selectedChartId === chart.id &&
+//                           "bg-indigo-50 border-l-2 border-indigo-500"
+//                       )}
+//                       onClick={() => onSelectChart?.(chart.id)}
+//                     >
+//                       <Checkbox
+//                         checked={isSelected}
+//                         onCheckedChange={() => onToggleChartSelection?.(chart.id)}
+//                         onClick={(e) => e.stopPropagation()}
+//                         className="mt-0.5"
+//                       />
+
+//                       <div className="flex-1 flex flex-col items-start gap-1">
+//                         <div className="flex items-center gap-2">
+//                           <FileText className="w-4 h-4 text-gray-500" />
+//                           <span className="text-sm font-medium text-gray-800 truncate">
+//                             {chart.name}
+//                           </span>
+//                         </div>
+
+//                         {uploadDate && (
+//                           <span className="text-xs text-gray-500 truncate">
+//                             {uploadDate}
+//                           </span>
+//                         )}
+//                       </div>
+//                     </div>
+//                   );
+//                 })
+//               )}
+//             </div>
+//           </>
+//         )}
+//       </div>
+//     </TooltipProvider>
+//   );
+// }
+
+
+
+// import { FileText, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+// import { cn } from "@/lib/utils";
+// import { Checkbox } from "@/components/ui/checkbox";
+// import { Button } from "@/components/ui/button";
+// import {
+//   TooltipProvider,
+//   Tooltip,
+//   TooltipTrigger,
+//   TooltipContent,
+// } from "@/components/ui/tooltip";
+
+// export default function ChartSidebar({
+//   charts = [],
+//   selectedChartId,
+//   selectedChartIds = [],
+//   onSelectChart,
+//   onToggleChartSelection,
+//   onSelectAllCharts,
+//   onRerunAllCharts,
+//   onCollapseToggle,
+//   collapsed = false,
+// }) {
+//   const allSelected =
+//     charts.length > 0 && charts.every((chart) => selectedChartIds.includes(chart.id));
+
+//   return (
+//     <TooltipProvider>
+//       <div
+//         className={cn(
+//           "h-full flex flex-col bg-white border-r overflow-hidden transition-all",
+//           collapsed ? "w-full px-1" : "w-full"
+//         )}
+//       >
+//         {/* Header */}
+//         <div className="flex items-center justify-between bg-indigo-50 border-b p-2 pr-3">
+//           <div className="flex items-center gap-2">
+//             <h2 className="text-sm font-semibold text-indigo-800 tracking-wide">
+//               {!collapsed && "Charts"}
+//             </h2>
+//           </div>
+
+//           <div className="flex items-center gap-1">
+//             {/* Rerun Button */}
+//             {onRerunAllCharts && !collapsed && (
+//               <Button
+//                 variant="ghost"
+//                 size="sm"
+//                 className="h-7 px-2 text-xs"
+//                 onClick={onRerunAllCharts}
+//               >
+//                 <RefreshCw className="w-3 h-3" />
+//                 Run
+//               </Button>
+//             )}
+
+//             {/* Collapse Toggle Button */}
+//             <Button
+//               variant="ghost"
+//               size="sm"
+//               className="h-7 px-2"
+//               onClick={() => onCollapseToggle?.(!collapsed)}
+//             >
+//               {collapsed ? (
+//                 <ChevronRight className="w-4 h-4" />
+//               ) : (
+//                 <ChevronLeft className="w-4 h-4" />
+//               )}
+//             </Button>
+//           </div>
+//         </div>
+
+//         {/* Select All */}
+//         {!collapsed && (
+//           <div className="p-3 border-b bg-gray-50 flex items-center gap-2">
+//             <Checkbox
+//               checked={allSelected}
+//               onCheckedChange={(checked) => onSelectAllCharts?.(!!checked)}
+//             />
+//             <span className="text-sm text-gray-700">Select All</span>
+//           </div>
+//         )}
+
+//         {/* Chart List */}
+//         <div className={cn("flex-1 overflow-y-auto", collapsed && "py-2")}>
+//           {charts.length === 0 ? (
+//             !collapsed && <p className="text-sm text-gray-500 p-4">No charts found.</p>
+//           ) : (
+//             charts.map((chart) => {
+//               const isSelected = selectedChartIds.includes(chart.id);
+//               const uploadDate = chart.createdAt
+//                 ? new Date(chart.createdAt).toLocaleString()
+//                 : "";
+
+//               return (
+//                 <div
+//                   key={chart.id}
+//                   className={cn(
+//                     "px-3 py-2 flex items-center gap-2 border-b cursor-pointer transition-all hover:bg-indigo-50",
+//                     selectedChartId === chart.id &&
+//                       "bg-indigo-50 border-l-2 border-indigo-500",
+//                     collapsed && "px-1 justify-center"
+//                   )}
+//                   onClick={() => onSelectChart?.(chart.id)}
+//                 >
+//                   {/* Checkbox */}
+//                   {!collapsed && (
+//                     <Checkbox
+//                       checked={isSelected}
+//                       onCheckedChange={() => onToggleChartSelection?.(chart.id)}
+//                       onClick={(e) => e.stopPropagation()}
+//                       className="mt-0.5"
+//                     />
+//                   )}
+
+//                   {/* Info */}
+//                   <div className={cn("flex-1 flex flex-col", collapsed && "hidden")}>
+//                     <div className="flex items-center gap-2">
+//                       <FileText className="w-4 h-4 text-gray-500" />
+//                       <span className="text-sm font-medium text-gray-800 truncate">
+//                         {chart.name}
+//                       </span>
+//                     </div>
+//                     {uploadDate && (
+//                       <span className="text-xs text-gray-500 truncate">
+//                         {uploadDate}
+//                       </span>
+//                     )}
+//                   </div>
+
+//                   {/* Mini icon when collapsed */}
+//                   {collapsed && (
+//                     <FileText className="w-5 h-5 text-gray-600" />
+//                   )}
+//                 </div>
+//               );
+//             })
+//           )}
+//         </div>
+//       </div>
+//     </TooltipProvider>
+//   );
+// }
+
+
+// src/components/ChartSidebar.tsx
+import { FileText, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
-interface ChartSidebarProps {
-  charts: Chart[];
-  selectedChartId: string | null;
-  onSelectChart: (chartId: string) => void;
-  filterStatus: "all" | "approved" | "unapproved";
-  onFilterChange: (value: "all" | "approved" | "unapproved") => void;
-  onImportCharts?: () => void;
-  onRunAllCharts?: () => void;
-  isCollapsed?: boolean;
-  onToggleCollapse?: () => void;
-  selectedChartIds?: string[];
-  onToggleChartSelection?: (chartId: string) => void;
-  onSelectAllCharts?: (selected: boolean) => void;
-}
-
-export const ChartSidebar = ({ charts, selectedChartId, onSelectChart, filterStatus, onFilterChange, onImportCharts, onRunAllCharts, isCollapsed, onToggleCollapse, selectedChartIds = [], onToggleChartSelection, onSelectAllCharts }: ChartSidebarProps) => {
-  const allSelected = charts.length > 0 && charts.every(chart => selectedChartIds.includes(chart.id));
-  const someSelected = selectedChartIds.length > 0 && !allSelected;
+export default function ChartSidebar({
+  charts = [],
+  selectedChartId,
+  selectedChartIds = [],
+  onSelectChart,
+  onToggleChartSelection,
+  onSelectAllCharts,
+  onRunCharts,        // 🔥 added
+  onCollapseToggle,
+  collapsed = false,
+}) {
+  const allSelected =
+    charts.length > 0 && charts.every((chart) => selectedChartIds.includes(chart.id));
 
   return (
-    <div className="h-full bg-sidebar border-r border-sidebar-border flex flex-col">
-      <div className="p-3 border-b border-sidebar-border space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-sidebar-foreground uppercase tracking-wider">
-            Charts
-          </h2>
+    <TooltipProvider>
+      <div
+        className={cn(
+          "h-full flex flex-col bg-white border-r overflow-hidden transition-all",
+          collapsed ? "w-full px-1" : "w-full"
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between bg-indigo-50 border-b p-2 pr-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-indigo-800 tracking-wide">
+              {!collapsed && "Charts"}
+            </h2>
+          </div>
+
           <div className="flex items-center gap-1">
-            {onToggleCollapse && (
+            {/* Run Button */}
+            {onRunCharts && !collapsed && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onToggleCollapse}
-                className="h-7 px-1.5"
-                title="Collapse Sidebar"
-              >
-                <ChevronLeft className="w-3 h-3" />
-              </Button>
-            )}
-            {onRunAllCharts && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRunAllCharts}
-                className="h-7 px-1.5"
-                title="Run All Charts"
+                className="h-7 px-2 text-xs"
+                onClick={() => onRunCharts()}
               >
                 <RefreshCw className="w-3 h-3" />
+                Run
               </Button>
             )}
-            {onImportCharts && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onImportCharts}
-                className="h-7 px-1.5"
-                title="Import Charts"
-              >
-                <Upload className="w-3 h-3" />
-              </Button>
-            )}
+
+            {/* Collapse Toggle Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => onCollapseToggle?.(!collapsed)}
+            >
+              {collapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </Button>
           </div>
         </div>
-        <Select value={filterStatus} onValueChange={onFilterChange}>
-          <SelectTrigger className="h-8 text-sm bg-sidebar">
-            <Filter className="w-4 h-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Charts</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="unapproved">Unapproved</SelectItem>
-          </SelectContent>
-        </Select>
-        {onSelectAllCharts && (
-          <div className="flex items-center gap-2 px-1">
+
+        {/* Select All */}
+        {!collapsed && (
+          <div className="p-3 border-b bg-gray-50 flex items-center gap-2">
             <Checkbox
               checked={allSelected}
-              onCheckedChange={(checked) => onSelectAllCharts(!!checked)}
-              className={someSelected ? "data-[state=checked]:bg-primary/50" : ""}
+              onCheckedChange={(checked) => onSelectAllCharts?.(!!checked)}
             />
-            <span className="text-sm text-sidebar-foreground">Select All</span>
+            <span className="text-sm text-gray-700">Select All</span>
           </div>
         )}
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {charts.map((chart) => (
-          <div
-            key={chart.id}
-            className={cn(
-              "w-full text-left px-3 py-2 flex items-start gap-2 border-b border-sidebar-border transition-colors hover:bg-sidebar-accent",
-              selectedChartId === chart.id && "bg-sidebar-accent border-l-2 border-l-primary"
-            )}
-          >
-            {onToggleChartSelection && (
-              <Checkbox
-                checked={selectedChartIds.includes(chart.id)}
-                onCheckedChange={() => onToggleChartSelection(chart.id)}
-                className="mt-0.5"
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-            <button
-              onClick={() => onSelectChart(chart.id)}
-              className="flex-1 flex items-start gap-2 text-left"
-            >
-              <FileText className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <div className="text-sm font-medium text-sidebar-foreground truncate">
-                    {chart.name}
+
+        {/* Chart List */}
+        <div className={cn("flex-1 overflow-y-auto", collapsed && "py-2")}>
+          {charts.length === 0 ? (
+            !collapsed && <p className="text-sm text-gray-500 p-4">No charts found.</p>
+          ) : (
+            charts.map((chart) => {
+              const isSelected = selectedChartIds.includes(chart.id);
+              const uploadDate = chart.createdAt
+                ? new Date(chart.createdAt).toLocaleString()
+                : "";
+
+              return (
+                <div
+                  key={chart.id}
+                  className={cn(
+                    "px-3 py-2 flex items-center gap-2 border-b cursor-pointer transition-all hover:bg-indigo-50",
+                    selectedChartId === chart.id &&
+                      "bg-indigo-50 border-l-2 border-indigo-500",
+                    collapsed && "px-1 justify-center"
+                  )}
+                  onClick={() => onSelectChart?.(chart.id)}
+                >
+                  {/* Checkbox */}
+                  {!collapsed && (
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => onToggleChartSelection?.(chart.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-0.5"
+                    />
+                  )}
+
+                  {/* Info */}
+                  <div className={cn("flex-1 flex flex-col", collapsed && "hidden")}>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-800 truncate">
+                        {chart.name}
+                      </span>
+                    </div>
+                    {uploadDate && (
+                      <span className="text-xs text-gray-500 truncate">
+                        {uploadDate}
+                      </span>
+                    )}
                   </div>
-                  <Badge 
-                    variant={chart.approved ? "default" : "secondary"} 
-                    className="text-xs h-5 px-2 shrink-0"
-                  >
-                    {chart.approved ? "Approved" : "Pending"}
-                  </Badge>
+
+                  {/* Mini icon when collapsed */}
+                  {collapsed && (
+                    <FileText className="w-5 h-5 text-gray-600" />
+                  )}
                 </div>
-                <div className="text-xs text-muted-foreground truncate">
-                  {chart.patientName}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {chart.date}
-                </div>
-              </div>
-            </button>
-          </div>
-        ))}
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
-};
+}
