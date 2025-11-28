@@ -1,7 +1,7 @@
 
 import { fileToBase64 } from "../utils/fileUtils";
 
-const API_BASE = import.meta.env.VITE_API_URL || "pilot-compare-backend.vercel.app/api";
+const API_BASE =  "http://localhost:8081/api";
 
 /* -------------------- CLIENTS -------------------- */
 

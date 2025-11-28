@@ -6,13 +6,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
-import clientRoutes from './routes/api/clients.js';
+import clientRoutes from './routes/apix/clients.js';
 
 // Import routes
 import openaiRoutes from './routes/openaiRoute.js';
 import claudeRoutes from './routes/claudeRoute.js';
 import geminiRoutes from './routes/geminiRoute.js';
-import chartRoutes from './routes/api/charts.js';
+import chartRoutes from './routes/apix/charts.js';
 
 // Initialize app
 const app = express();
