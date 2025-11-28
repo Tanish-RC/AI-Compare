@@ -1,11 +1,11 @@
 
 import { fileToBase64 } from "../utils/fileUtils";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8081/api";
+const API_BASE = import.meta.env.VITE_API_URL || "pilot-compare-backend.vercel.app/api";
 
 /* -------------------- CLIENTS -------------------- */
 
-// ✅ Get all clients
+// ✅ Get all clients hh
 export async function getClients() {
   try {
     const res = await fetch(`${API_BASE}/clients`);
@@ -260,21 +260,42 @@ export async function saveRunFinalCodes(chartId, runId, payload) {
 }
 
 // GET runs for client with filters
-export async function getClientRuns(clientId, { start, end, promptId, page = 1, limit = 25 } = {}) {
-  const params = new URLSearchParams();
-  if (start) params.append("start", start);
-  if (end) params.append("end", end);
-  if (promptId) params.append("promptId", promptId);
-  if (page) params.append("page", String(page));
-  if (limit) params.append("limit", String(limit));
+// 
 
-  const res = await fetch(`${API_BASE}/clients/${clientId}/runs?${params.toString()}`);
+// services/api.js (add or replace this function)
+
+export async function getClientRuns(clientId, params = {}) {
+  if (!clientId) throw new Error("clientId required");
+
+  // Build URL + query params robustly
+  const url = new URL(`/api/clients/${clientId}/runs`, window.location.origin);
+  const qs = new URLSearchParams();
+
+  if (params.start) qs.set("start", params.start);
+  if (params.end) qs.set("end", params.end);
+  if (params.promptId) qs.set("promptId", params.promptId);
+  if (params.page) qs.set("page", String(params.page));
+  if (params.limit) qs.set("limit", String(params.limit));
+
+  const full = `${url.pathname}${qs.toString() ? `?${qs.toString()}` : ""}`;
+
+  // debug - check network tab or console
+  // eslint-disable-next-line no-console
+  console.log("GET", full);
+
+  const res = await fetch(full, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || "Failed to fetch runs");
+    const txt = await res.text();
+    throw new Error(`getClientRuns failed: ${res.status} ${res.statusText} - ${txt}`);
   }
+
   return res.json();
 }
+
 
 // POST export selected runs -> returns CSV response
 export async function exportClientRuns(clientId, runIds = []) {
