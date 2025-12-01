@@ -1,7 +1,7 @@
 
 import { fileToBase64 } from "../utils/fileUtils";
 
-const API_BASE =  "http://localhost:8081/api";
+const API_BASE =  "https://pilot-compare-backend.vercel.app/api";
 
 /* -------------------- CLIENTS -------------------- */
 

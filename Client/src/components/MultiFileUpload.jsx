@@ -941,7 +941,7 @@ import { useState, useEffect } from "react";
 import { X, FileText, Loader2, Upload } from "lucide-react";
 import { incrementTotalCharts } from "@/services/api";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8081/api";
+const API_BASE = import.meta.env.VITE_API_URL || "https://pilot-compare-backend.vercel.app//api";
 
 export default function MultiFileUpload({
   results,

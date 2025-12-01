@@ -329,4 +329,4 @@ const chartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Chart", chartSchema);
+export default mongoose.models.Chart || mongoose.model("Chart", chartSchema);
