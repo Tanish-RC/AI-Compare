@@ -4276,7 +4276,7 @@ export default function ClientCharts() {
   useEffect(() => {
     const loadClient = async () => {
       try {
-        const res = await fetch(`http://localhost:8081/api/clients/${clientId}`);
+        const res = await fetch(`https://pilot-compare-backend.vercel.app/api/clients/${clientId}`);
         if (!res.ok) throw new Error("Failed to fetch client");
         const data = await res.json();
         setClient(data);
@@ -4409,7 +4409,7 @@ export default function ClientCharts() {
       setAvailableRuns([]);
       setSelectedPromptId(null);
 
-      const res = await fetch(`http://localhost:8081/api/charts/${chartId}`);
+      const res = await fetch(`https://pilot-compare-backend.vercel.app/api/charts/${chartId}`);
       if (!res.ok) throw new Error("Failed to fetch chart details");
 
       const data = await res.json();

@@ -1166,7 +1166,7 @@ export default function RunChartsModal({
 
           try {
             const res = await fetch(
-              `http://localhost:8081/api/charts/${chartId}/run`,
+              `https://pilot-compare-backend.vercel.app/api/charts/${chartId}/run`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

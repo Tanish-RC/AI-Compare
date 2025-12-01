@@ -140,7 +140,7 @@ export const getChartById = async (chartId) => {
 export const uploadChart = async (clientId, file, prompt = "") => {
   try {
     // ✅ Hardcoded backend URL since you don’t have .env
-    const API_BASE = "http://localhost:8081/api";
+    const API_BASE = "https://pilot-compare-backend.vercel.app/api";
 
     // Convert file to Base64 before uploading
     const base64Data = await fileToBase64(file);

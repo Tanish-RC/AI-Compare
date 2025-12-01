@@ -329,7 +329,7 @@ export async function processFileWithBackend(file, prompt = "", model = "openai"
     const base64Data = await fileToBase64(file);
 
     // Hardcoded backend URL
-    const BASE_URL = "http://localhost:8081";
+    const BASE_URL = "https://pilot-compare-backend.vercel.app/";
 
     // Map each model to its endpoint
     const endpointMap = {

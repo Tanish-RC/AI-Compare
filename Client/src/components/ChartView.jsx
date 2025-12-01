@@ -196,7 +196,7 @@ export const ChartView = ({ chart, onToggleApproval, onRerun }) => {
     const fetchPdf = async () => {
       try {
         setIsLoadingPdf(true);
-        const res = await fetch(`http://localhost:8081/api/charts/${chart._id}/pdf`);
+        const res = await fetch(`https://pilot-compare-backend.vercel.app/api/charts/${chart._id}/pdf`);
         if (!res.ok) return; // fallback to pdfUrl
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);

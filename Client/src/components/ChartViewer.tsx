@@ -635,7 +635,7 @@ const ChartViewer = ({
       try {
         setIsLoadingPdf(true);
         const res = await fetch(
-          `http://localhost:8081/api/charts/${chart._id}/pdf`
+          `https://pilot-compare-backend.vercel.app/api/charts/${chart._id}/pdf`
         );
         if (!res.ok) return;
         const blob = await res.blob();
