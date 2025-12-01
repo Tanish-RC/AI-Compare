@@ -193,6 +193,14 @@ router.post("/", createClient);
 // Get all clients
 router.get("/", getAllClients);
 
+// GET runs with filters & pagination
+router.get("/:clientId/runs", getClientRuns);
+
+// POST export CSV for selected runs
+router.post("/:clientId/runs/export", exportClientRunsCsv);
+
+router.put("/:clientId/charts/increment", incrementTotalCharts);
+
 // Get single client
 router.get("/:id", getClient);
 
@@ -202,13 +210,8 @@ router.get("/:id/prompts", getPrompts);
 //  ADD new prompt for client
 router.post("/:id/prompts", addPrompt);
 
-router.put("/:clientId/charts/increment", incrementTotalCharts);
 
-// GET runs with filters & pagination
-router.get("/:clientId/runs", getClientRuns);
 
-// POST export CSV for selected runs
-router.post("/:clientId/runs/export", exportClientRunsCsv);
 
 
 export default router;
