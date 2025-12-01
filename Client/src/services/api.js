@@ -268,7 +268,7 @@ export async function getClientRuns(clientId, params = {}) {
   if (!clientId) throw new Error("clientId required");
 
   // Build URL + query params robustly
-  const url = new URL(`/api/clients/${clientId}/runs`, window.location.origin);
+  const url = `${API_BASE}/clients/${clientId}/runs`;
   const qs = new URLSearchParams();
 
   if (params.start) qs.set("start", params.start);
