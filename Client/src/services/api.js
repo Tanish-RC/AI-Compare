@@ -142,6 +142,7 @@ export const uploadChart = async (clientId, file, prompt = "") => {
     // ✅ Hardcoded backend URL since you don’t have .env
     const API_BASE = "https://pilot-compare-backend.vercel.app/api";
 
+
     // Convert file to Base64 before uploading
     const base64Data = await fileToBase64(file);
 
@@ -277,8 +278,10 @@ export async function getClientRuns(clientId, params = {}) {
   if (params.page) qs.set("page", String(params.page));
   if (params.limit) qs.set("limit", String(params.limit));
 
-  const full = `${url.pathname}${qs.toString() ? `?${qs.toString()}` : ""}`;
+  // const full = `${url.pathname}${qs.toString() ? `?${qs.toString()}` : ""}`;
 
+  
+  const full = qs.toString() ? `${url}?${qs.toString()}` : url;
   // debug - check network tab or console
   // eslint-disable-next-line no-console
   console.log("GET", full);
