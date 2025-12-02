@@ -667,26 +667,42 @@ export const exportClientRunsCsv = async (req, res) => {
         const provIcds = Array.isArray(provObj.ICD_Codes) ? provObj.ICD_Codes : [];
 
         // CPT provider columns
-        if (provCpts.length > 0) {
-          const codes = provCpts.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
-          const descriptions = provCpts.map((c) => (c && c.description ? c.description : ""));
-          cptRow[`${prov}_codes`] = codes.join(", ");
-          cptRow[`${prov}_descriptions`] = JSON.stringify(descriptions);
-        } else {
-          cptRow[`${prov}_codes`] = "";
-          cptRow[`${prov}_descriptions`] = JSON.stringify([]);
-        }
+        // if (provCpts.length > 0) {
+        //   const codes = provCpts.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
+        //   const descriptions = provCpts.map((c) => (c && c.description ? c.description : ""));
+        //   cptRow[`${prov}_codes`] = codes.join(", ");
+        //   cptRow[`${prov}_descriptions`] = JSON.stringify(descriptions);
+        // } else {
+        //   cptRow[`${prov}_codes`] = "";
+        //   cptRow[`${prov}_descriptions`] = JSON.stringify([]);
+        // }
+        // CPT provider columns (NO descriptions)
+if (provCpts.length > 0) {
+  const codes = provCpts.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
+  cptRow[`${prov}_codes`] = codes.join(", ");
+} else {
+  cptRow[`${prov}_codes`] = "";
+}
+
 
         // ICD provider columns
-        if (provIcds.length > 0) {
-          const codes = provIcds.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
-          const descriptions = provIcds.map((c) => (c && c.description ? c.description : ""));
-          icdRow[`${prov}_codes`] = codes.join(", ");
-          icdRow[`${prov}_descriptions`] = JSON.stringify(descriptions);
-        } else {
-          icdRow[`${prov}_codes`] = "";
-          icdRow[`${prov}_descriptions`] = JSON.stringify([]);
-        }
+        // if (provIcds.length > 0) {
+        //   const codes = provIcds.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
+        //   const descriptions = provIcds.map((c) => (c && c.description ? c.description : ""));
+        //   icdRow[`${prov}_codes`] = codes.join(", ");
+        //   icdRow[`${prov}_descriptions`] = JSON.stringify(descriptions);
+        // } else {
+        //   icdRow[`${prov}_codes`] = "";
+        //   icdRow[`${prov}_descriptions`] = JSON.stringify([]);
+        // }
+        // ICD provider columns (NO descriptions)
+if (provIcds.length > 0) {
+  const codes = provIcds.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
+  icdRow[`${prov}_codes`] = codes.join(", ");
+} else {
+  icdRow[`${prov}_codes`] = "";
+}
+
       }
 
       cptRows.push(cptRow);
