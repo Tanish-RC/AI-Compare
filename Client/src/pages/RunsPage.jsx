@@ -597,6 +597,736 @@
 
 
 
+// import React, { useEffect, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import { getClientRuns, exportClientRuns } from "@/services/api";
+// import { Button } from "@/components/ui/button";
+// import { Card } from "@/components/ui/card";
+// import { ScrollArea } from "@/components/ui/scroll-area";
+// import { Input } from "@/components/ui/input";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue
+// } from "@/components/ui/select";
+// import { useToast } from "@/hooks/use-toast";
+// import { format } from "date-fns";
+
+// const RunsPage = () => {
+//   const { clientId } = useParams();
+//   const navigate = useNavigate();
+//   const { toast } = useToast();
+
+//   const [runs, setRuns] = useState([]);
+//   const [total, setTotal] = useState(0);
+
+//   const [page, setPage] = useState(1);
+//   const limit = 25;
+
+//   // filters
+//   const [startDT, setStartDT] = useState("");
+//   const [endDT, setEndDT] = useState("");
+//   const [promptFilter, setPromptFilter] = useState("__all__");
+
+//   // selection
+//   const [selectedRuns, setSelectedRuns] = useState(new Set());
+//   const [selectAllOnPage, setSelectAllOnPage] = useState(false);
+
+//   // prompts for dropdown
+//   const [availablePrompts, setAvailablePrompts] = useState([]);
+
+//   const [loading, setLoading] = useState(false);
+//   const [exporting, setExporting] = useState(false);
+
+// const fetchRuns = async () => {
+//   try {
+//     setLoading(true);
+
+//     // convert local datetime-local input to ISO strings (if present)
+//     const startIso = startDT ? new Date(startDT).toISOString() : undefined;
+//     const endIso = endDT ? new Date(endDT).toISOString() : undefined;
+
+//     // prompt filter handling
+//     const promptIdParam = promptFilter === "__all__" ? undefined : promptFilter;
+
+//     // debug log (open browser console to verify)
+//     // eslint-disable-next-line no-console
+//     console.log("Fetching runs with params:", {
+//       clientId,
+//       start: startIso,
+//       end: endIso,
+//       promptId: promptIdParam,
+//       page,
+//       limit,
+//     });
+
+//     const resp = await getClientRuns(clientId, {
+//       start: startIso,
+//       end: endIso,
+//       promptId: promptIdParam,
+//       page,
+//       limit,
+//     });
+
+//     setRuns(resp.runs || []);
+//     setTotal(resp.total || 0);
+
+//     // collect prompts for dropdown
+//     const prompts = [];
+//     (resp.runs || []).forEach((r) => {
+//       const pid = String(r.promptId || "");
+//       if (pid && !prompts.find((p) => p.id === pid)) {
+//         prompts.push({ id: pid, name: r.promptName || pid });
+//       }
+//     });
+
+//     setAvailablePrompts(prompts);
+
+//     // reset selection on new page or filter
+//     setSelectedRuns(new Set());
+//     setSelectAllOnPage(false);
+//   } catch (err) {
+//     console.error(err);
+//     toast({
+//       title: "Error",
+//       description: "Failed to fetch runs",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+//   // Run fetch on load + pagination
+//   useEffect(() => {
+//     if (!clientId) return;
+//     fetchRuns();
+//   }, [clientId, page]);
+
+
+//   // ---------------------------
+//   // UI Actions
+//   // ---------------------------
+//   const toggleSelectRun = (runId) => {
+//     setSelectedRuns((prev) => {
+//       const next = new Set(prev);
+//       next.has(runId) ? next.delete(runId) : next.add(runId);
+//       setSelectAllOnPage(false);
+//       return next;
+//     });
+//   };
+
+//   const handleSelectAllPage = () => {
+//     if (selectAllOnPage) {
+//       setSelectedRuns((prev) => {
+//         const next = new Set(prev);
+//         runs.forEach((r) => next.delete(String(r.runId)));
+//         return next;
+//       });
+//       setSelectAllOnPage(false);
+//     } else {
+//       setSelectedRuns((prev) => {
+//         const next = new Set(prev);
+//         runs.forEach((r) => next.add(String(r.runId)));
+//         return next;
+//       });
+//       setSelectAllOnPage(true);
+//     }
+//   };
+
+//   const handleExport = async () => {
+//     if (selectedRuns.size === 0) {
+//       toast({
+//         title: "No runs selected",
+//         description: "Select runs to export.",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     setExporting(true);
+//     try {
+//       const blob = await exportClientRuns(clientId, Array.from(selectedRuns));
+
+//       const url = URL.createObjectURL(blob);
+//       const a = document.createElement("a");
+//       a.href = url;
+//       a.download = `runs_export_${clientId}_${Date.now()}.csv`;
+//       document.body.appendChild(a);
+//       a.click();
+//       a.remove();
+//       URL.revokeObjectURL(url);
+
+//       toast({
+//         title: "Exported",
+//         description: "CSV downloaded.",
+//       });
+
+//     } catch (err) {
+//       console.error(err);
+//       toast({
+//         title: "Export failed",
+//         description: err.message,
+//         variant: "destructive",
+//       });
+//     } finally {
+//       setExporting(false);
+//     }
+//   };
+
+//   const handleApplyFilters = () => {
+//     setPage(1);
+//     fetchRuns();
+//   };
+
+//   const totalPages = Math.ceil((total || 0) / limit);
+
+//   // ---------------------------
+//   // Render
+//   // ---------------------------
+//   return (
+//     <div className="p-6">
+//       {/* Header */}
+//       <div className="flex items-center justify-between mb-4">
+//         <h2 className="text-xl font-semibold">Client Runs</h2>
+
+//         <div className="flex gap-2">
+//           <Button variant="outline" onClick={() => navigate(-1)}>
+//             Back
+//           </Button>
+
+//           <Button
+//             onClick={handleExport}
+//             disabled={exporting || selectedRuns.size === 0}
+//           >
+//             {exporting ? "Exporting..." : `Export ${selectedRuns.size}`}
+//           </Button>
+//         </div>
+//       </div>
+
+//       {/* Filters */}
+//       <div className="flex gap-3 items-end mb-4">
+//         <div>
+//           <label className="text-xs text-muted-foreground block mb-1">
+//             Start (date/time)
+//           </label>
+//           <Input
+//             type="datetime-local"
+//             value={startDT}
+//             onChange={(e) => setStartDT(e.target.value)}
+//           />
+//         </div>
+
+//         <div>
+//           <label className="text-xs text-muted-foreground block mb-1">
+//             End (date/time)
+//           </label>
+//           <Input
+//             type="datetime-local"
+//             value={endDT}
+//             onChange={(e) => setEndDT(e.target.value)}
+//           />
+//         </div>
+
+//         <div>
+//           <label className="text-xs text-muted-foreground block mb-1">
+//             Prompt
+//           </label>
+
+//           {/* FIXED SELECT — no placeholder, no empty values */}
+//           <Select
+//             value={promptFilter}
+//             onValueChange={(v) => setPromptFilter(v)}
+//           >
+//             <SelectTrigger className="w-48">
+//               <SelectValue />
+//             </SelectTrigger>
+
+//             <SelectContent>
+//               <SelectItem value="__all__">All prompts</SelectItem>
+//               {availablePrompts.map((p) => (
+//                 <SelectItem key={p.id} value={p.id}>
+//                   {p.name}
+//                 </SelectItem>
+//               ))}
+//             </SelectContent>
+//           </Select>
+//         </div>
+
+//         <Button onClick={handleApplyFilters}>Apply</Button>
+
+//         <div className="ml-auto flex items-center gap-3">
+//           <label className="text-sm">
+//             <input
+//               type="checkbox"
+//               checked={selectAllOnPage}
+//               onChange={handleSelectAllPage}
+//             />{" "}
+//             Select all on page
+//           </label>
+//         </div>
+//       </div>
+
+//       {/* Runs List */}
+//       <ScrollArea className="h-[60vh]">
+//         <div className="space-y-2">
+//           {loading ? (
+//             <div className="p-4 text-muted-foreground">Loading...</div>
+//           ) : runs.length === 0 ? (
+//             <div className="p-4 text-muted-foreground">No runs.</div>
+//           ) : (
+//             runs.map((r) => {
+//               const id = String(r.runId);
+
+//               return (
+//                 <Card key={id} className="p-4 flex items-center gap-4">
+//                   <input
+//                     type="checkbox"
+//                     checked={selectedRuns.has(id)}
+//                     onChange={() => toggleSelectRun(id)}
+//                   />
+
+//                   <div className="flex-1">
+//                     <div className="flex items-center justify-between">
+//                       <div>
+//                         <div className="text-sm font-medium">
+//                           {r.promptName || "Prompt"}
+//                         </div>
+//                         <div className="text-xs text-muted-foreground">
+//                           {r.chartName || ""}
+//                         </div>
+//                       </div>
+
+//                       <div className="text-right text-xs text-muted-foreground">
+//                         <div>
+//                           {r.timestamp
+//                             ? format(new Date(r.timestamp), "PPpp")
+//                             : "unknown"}
+//                         </div>
+
+//                         {/* FINAL COUNTS ONLY */}
+//                         <div className="mt-1">
+//                           CPT:{" "}
+//                           {Array.isArray(r.finalCptCodes)
+//                             ? r.finalCptCodes.length
+//                             : 0}{" "}
+//                           | ICD:{" "}
+//                           {Array.isArray(r.finalIcdCodes)
+//                             ? r.finalIcdCodes.length
+//                             : 0}
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Card>
+//               );
+//             })
+//           )}
+//         </div>
+//       </ScrollArea>
+
+//       {/* Pagination */}
+//       <div className="mt-4 flex items-center justify-between">
+//         <div className="text-sm text-muted-foreground">
+//           Total runs: {total}
+//         </div>
+
+//         <div className="flex items-center gap-2">
+//           <Button
+//             onClick={() => setPage((p) => Math.max(1, p - 1))}
+//             disabled={page <= 1}
+//           >
+//             Prev
+//           </Button>
+
+//           <div>
+//             Page {page} / {totalPages || 1}
+//           </div>
+
+//           <Button
+//             onClick={() => setPage((p) => Math.min(totalPages || 1, p + 1))}
+//             disabled={page >= totalPages}
+//           >
+//             Next
+//           </Button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default RunsPage;
+
+
+// import React, { useEffect, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import { getClientRuns, exportClientRuns } from "@/services/api";
+// import { Button } from "@/components/ui/button";
+// import { Card } from "@/components/ui/card";
+// import { ScrollArea } from "@/components/ui/scroll-area";
+// import { Input } from "@/components/ui/input";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue
+// } from "@/components/ui/select";
+// import { useToast } from "@/hooks/use-toast";
+// import { format } from "date-fns";
+
+// const API_BASE = "https://pilot-compare-backend.vercel.app/api";
+
+// const RunsPage = () => {
+//   const { clientId } = useParams();
+//   const navigate = useNavigate();
+//   const { toast } = useToast();
+
+//   const [runs, setRuns] = useState([]);
+//   const [total, setTotal] = useState(0);
+
+//   const [page, setPage] = useState(1);
+//   const limit = 25;
+
+//   // filters
+//   const [startDT, setStartDT] = useState("");
+//   const [endDT, setEndDT] = useState("");
+//   const [promptFilter, setPromptFilter] = useState("__all__");
+
+//   // prompts loaded once
+//   const [availablePrompts, setAvailablePrompts] = useState([]);
+
+//   const [loading, setLoading] = useState(false);
+//   const [exporting, setExporting] = useState(false);
+
+//   const [selectedRuns, setSelectedRuns] = useState(new Set());
+//   const [selectAllOnPage, setSelectAllOnPage] = useState(false);
+
+//   /* ============================================================
+//      FETCH ALL PROMPTS FOR THIS CLIENT (ONCE)
+//   ============================================================ */
+//   const fetchPrompts = async () => {
+//     try {
+//       const res = await fetch(`${API_BASE}/clients/${clientId}/prompts`);
+//       const data = await res.json();
+
+//       // Expected: { prompts: [...] }
+//       setAvailablePrompts(data.prompts || []);
+//     } catch (err) {
+//       console.error("Failed to load prompts:", err);
+//       toast({
+//         title: "Error",
+//         description: "Unable to load prompts",
+//         variant: "destructive",
+//       });
+//     }
+//   };
+
+//   /* ============================================================
+//      FETCH RUNS FOR CLIENT
+//   ============================================================ */
+//   const fetchRuns = async () => {
+//     try {
+//       setLoading(true);
+
+//       const startIso = startDT ? new Date(startDT).toISOString() : undefined;
+//       const endIso = endDT ? new Date(endDT).toISOString() : undefined;
+//       const promptIdParam = promptFilter === "__all__" ? undefined : promptFilter;
+
+//       console.log("Fetching runs with params:", {
+//         clientId,
+//         start: startIso,
+//         end: endIso,
+//         promptId: promptIdParam,
+//         page,
+//         limit,
+//       });
+
+//       const resp = await getClientRuns(clientId, {
+//         start: startIso,
+//         end: endIso,
+//         promptId: promptIdParam,
+//         page,
+//         limit,
+//       });
+
+//       setRuns(resp.runs || []);
+//       setTotal(resp.total || 0);
+
+//       // Reset selection when runs load
+//       setSelectedRuns(new Set());
+//       setSelectAllOnPage(false);
+//     } catch (err) {
+//       console.error(err);
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch runs",
+//         variant: "destructive",
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   /* ============================================================
+//      LOAD PROMPTS + RUNS ON FIRST LOAD
+//   ============================================================ */
+//   useEffect(() => {
+//     if (!clientId) return;
+
+//     fetchPrompts();  // load prompts once
+//     fetchRuns();     // load first page
+//   }, [clientId]);
+
+//   /* ============================================================
+//      Reload runs when page changes
+//   ============================================================ */
+//   useEffect(() => {
+//     if (!clientId) return;
+//     fetchRuns();
+//   }, [page]);
+
+//   /* ============================================================
+//      UI Actions
+//   ============================================================ */
+//   const toggleSelectRun = (runId) => {
+//     setSelectedRuns((prev) => {
+//       const next = new Set(prev);
+//       next.has(runId) ? next.delete(runId) : next.add(runId);
+//       setSelectAllOnPage(false);
+//       return next;
+//     });
+//   };
+
+//   const handleSelectAllPage = () => {
+//     if (selectAllOnPage) {
+//       setSelectedRuns(new Set());
+//       setSelectAllOnPage(false);
+//     } else {
+//       const ids = runs.map((r) => String(r.runId));
+//       setSelectedRuns(new Set(ids));
+//       setSelectAllOnPage(true);
+//     }
+//   };
+
+//   const handleApplyFilters = () => {
+//     setPage(1);
+//     fetchRuns();
+//   };
+
+//   const handleExport = async () => {
+//     if (selectedRuns.size === 0) {
+//       toast({
+//         title: "No runs selected",
+//         description: "Select runs to export.",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     setExporting(true);
+//     try {
+//       const blob = await exportClientRuns(clientId, Array.from(selectedRuns));
+
+//       const url = URL.createObjectURL(blob);
+//       const a = document.createElement("a");
+//       a.href = url;
+//       a.download = `runs_export_${clientId}_${Date.now()}.csv`;
+//       a.click();
+//       URL.revokeObjectURL(url);
+
+//       toast({
+//         title: "Exported",
+//         description: "CSV downloaded.",
+//       });
+//     } catch (err) {
+//       console.error(err);
+//       toast({
+//         title: "Export failed",
+//         description: err.message,
+//         variant: "destructive",
+//       });
+//     } finally {
+//       setExporting(false);
+//     }
+//   };
+
+//   const totalPages = Math.ceil((total || 0) / limit);
+
+//   /* ============================================================
+//      RENDER
+//   ============================================================ */
+//   return (
+//     <div className="p-6">
+//       {/* Header */}
+//       <div className="flex items-center justify-between mb-4">
+//         <h2 className="text-xl font-semibold">Client Runs</h2>
+
+//         <div className="flex gap-2">
+//           <Button variant="outline" onClick={() => navigate(-1)}>
+//             Back
+//           </Button>
+
+//           <Button
+//             onClick={handleExport}
+//             disabled={exporting || selectedRuns.size === 0}
+//           >
+//             {exporting ? "Exporting..." : `Export ${selectedRuns.size}`}
+//           </Button>
+//         </div>
+//       </div>
+
+//       {/* Filters */}
+//       <div className="flex gap-3 items-end mb-4">
+//         <div>
+//           <label className="text-xs text-muted-foreground block mb-1">
+//             Start (date/time)
+//           </label>
+//           <Input
+//             type="datetime-local"
+//             value={startDT}
+//             onChange={(e) => setStartDT(e.target.value)}
+//           />
+//         </div>
+
+//         <div>
+//           <label className="text-xs text-muted-foreground block mb-1">
+//             End (date/time)
+//           </label>
+//           <Input
+//             type="datetime-local"
+//             value={endDT}
+//             onChange={(e) => setEndDT(e.target.value)}
+//           />
+//         </div>
+
+//         <div>
+//           <label className="text-xs text-muted-foreground block mb-1">
+//             Prompt
+//           </label>
+
+//           <Select value={promptFilter} onValueChange={setPromptFilter}>
+//             <SelectTrigger className="w-48">
+//               <SelectValue placeholder="Select prompt" />
+//             </SelectTrigger>
+
+//             <SelectContent>
+//               <SelectItem value="__all__">All prompts</SelectItem>
+//               {availablePrompts.map((p) => (
+//                 <SelectItem key={p.id} value={p.id}>
+//                   {p.name}
+//                 </SelectItem>
+//               ))}
+//             </SelectContent>
+//           </Select>
+//         </div>
+
+//         <Button onClick={handleApplyFilters}>Apply</Button>
+
+//         <div className="ml-auto flex items-center gap-3">
+//           <label className="text-sm">
+//             <input
+//               type="checkbox"
+//               checked={selectAllOnPage}
+//               onChange={handleSelectAllPage}
+//             />{" "}
+//             Select all on page
+//           </label>
+//         </div>
+//       </div>
+
+//       {/* Runs List */}
+//       <ScrollArea className="h-[60vh]">
+//         <div className="space-y-2">
+//           {loading ? (
+//             <div className="p-4 text-muted-foreground">Loading...</div>
+//           ) : runs.length === 0 ? (
+//             <div className="p-4 text-muted-foreground">No runs.</div>
+//           ) : (
+//             runs.map((r) => {
+//               const id = String(r.runId);
+
+//               return (
+//                 <Card key={id} className="p-4 flex items-center gap-4">
+//                   <input
+//                     type="checkbox"
+//                     checked={selectedRuns.has(id)}
+//                     onChange={() => toggleSelectRun(id)}
+//                   />
+
+//                   <div className="flex-1">
+//                     <div className="flex items-center justify-between">
+//                       <div>
+//                         <div className="text-sm font-medium">
+//                           {r.promptName || "Prompt"}
+//                         </div>
+//                         <div className="text-xs text-muted-foreground">
+//                           {r.chartName || ""}
+//                         </div>
+//                       </div>
+
+//                       <div className="text-right text-xs text-muted-foreground">
+//                         <div>
+//                           {r.timestamp
+//                             ? format(new Date(r.timestamp), "PPpp")
+//                             : "unknown"}
+//                         </div>
+
+//                         <div className="mt-1">
+//                           CPT:{" "}
+//                           {Array.isArray(r.finalCptCodes)
+//                             ? r.finalCptCodes.length
+//                             : 0}{" "}
+//                           | ICD:{" "}
+//                           {Array.isArray(r.finalIcdCodes)
+//                             ? r.finalIcdCodes.length
+//                             : 0}
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Card>
+//               );
+//             })
+//           )}
+//         </div>
+//       </ScrollArea>
+
+//       {/* Pagination */}
+//       <div className="mt-4 flex items-center justify-between">
+//         <div className="text-sm text-muted-foreground">
+//           Total runs: {total}
+//         </div>
+
+//         <div className="flex items-center gap-2">
+//           <Button
+//             onClick={() => setPage((p) => Math.max(1, p - 1))}
+//             disabled={page <= 1}
+//           >
+//             Prev
+//           </Button>
+
+//           <div>
+//             Page {page} / {totalPages || 1}
+//           </div>
+
+//           <Button
+//             onClick={() => setPage((p) => Math.min(totalPages || 1, p + 1))}
+//             disabled={page >= totalPages}
+//           >
+//             Next
+//           </Button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default RunsPage;
+
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getClientRuns, exportClientRuns } from "@/services/api";
@@ -614,6 +1344,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+const API_BASE = "https://pilot-compare-backend.vercel.app/api";
+
 const RunsPage = () => {
   const { clientId } = useParams();
   const navigate = useNavigate();
@@ -630,129 +1362,119 @@ const RunsPage = () => {
   const [endDT, setEndDT] = useState("");
   const [promptFilter, setPromptFilter] = useState("__all__");
 
-  // selection
-  const [selectedRuns, setSelectedRuns] = useState(new Set());
-  const [selectAllOnPage, setSelectAllOnPage] = useState(false);
-
-  // prompts for dropdown
+  // prompts loaded once
   const [availablePrompts, setAvailablePrompts] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  // ---------------------------
-  // Fetch runs
-  // ---------------------------
-//   const fetchRuns = async () => {
-//     try {
-//       setLoading(true);
+  const [selectedRuns, setSelectedRuns] = useState(new Set());
+  const [selectAllOnPage, setSelectAllOnPage] = useState(false);
 
-//       const resp = await getClientRuns(clientId, {
-//         start: startDT || undefined,
-//         end: endDT || undefined,
-//         promptId: promptFilter === "__all__" ? undefined : promptFilter,
-//         page,
-//         limit,
-//       });
+  /* ============================================================
+     FETCH ALL PROMPTS FOR THIS CLIENT (ONCE)
+  ============================================================ */
+  const fetchPrompts = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/clients/${clientId}/prompts`);
+      const data = await res.json();
 
-//       setRuns(resp.runs || []);
-//       setTotal(resp.total || 0);
+      let prompts = [];
 
-//       // collect unique prompts
-//       const prompts = [];
-//       (resp.runs || []).forEach((r) => {
-//         const pid = String(r.promptId || "");
-//         if (pid && !prompts.find((p) => p.id === pid)) {
-//           prompts.push({ id: pid, name: r.promptName || pid });
-//         }
-//       });
-
-//       setAvailablePrompts(prompts);
-//       setSelectedRuns(new Set());
-//       setSelectAllOnPage(false);
-
-//     } catch (err) {
-//       console.error(err);
-//       toast({
-//         title: "Error",
-//         description: "Failed to fetch runs",
-//         variant: "destructive",
-//       });
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-    // inside RunsPage.jsx - replace the fetchRuns function
-const fetchRuns = async () => {
-  try {
-    setLoading(true);
-
-    // convert local datetime-local input to ISO strings (if present)
-    const startIso = startDT ? new Date(startDT).toISOString() : undefined;
-    const endIso = endDT ? new Date(endDT).toISOString() : undefined;
-
-    // prompt filter handling
-    const promptIdParam = promptFilter === "__all__" ? undefined : promptFilter;
-
-    // debug log (open browser console to verify)
-    // eslint-disable-next-line no-console
-    console.log("Fetching runs with params:", {
-      clientId,
-      start: startIso,
-      end: endIso,
-      promptId: promptIdParam,
-      page,
-      limit,
-    });
-
-    const resp = await getClientRuns(clientId, {
-      start: startIso,
-      end: endIso,
-      promptId: promptIdParam,
-      page,
-      limit,
-    });
-
-    setRuns(resp.runs || []);
-    setTotal(resp.total || 0);
-
-    // collect prompts for dropdown
-    const prompts = [];
-    (resp.runs || []).forEach((r) => {
-      const pid = String(r.promptId || "");
-      if (pid && !prompts.find((p) => p.id === pid)) {
-        prompts.push({ id: pid, name: r.promptName || pid });
+      // BACKEND RETURNS ARRAY → normalize
+      if (Array.isArray(data)) {
+        prompts = data.map((p) => ({
+          id: p.promptId,
+          name: p.promptName
+        }));
       }
-    });
 
-    setAvailablePrompts(prompts);
+      // BACKEND RETURNS { prompts: [] } → normalize
+      else if (Array.isArray(data.prompts)) {
+        prompts = data.prompts.map((p) => ({
+          id: p.promptId,
+          name: p.promptName
+        }));
+      }
 
-    // reset selection on new page or filter
-    setSelectedRuns(new Set());
-    setSelectAllOnPage(false);
-  } catch (err) {
-    console.error(err);
-    toast({
-      title: "Error",
-      description: "Failed to fetch runs",
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      setAvailablePrompts(prompts);
+    } catch (err) {
+      console.error("Failed to load prompts:", err);
+      toast({
+        title: "Error",
+        description: "Unable to load prompts",
+        variant: "destructive",
+      });
+    }
+  };
 
-  // Run fetch on load + pagination
+  /* ============================================================
+     FETCH RUNS FOR CLIENT
+  ============================================================ */
+  const fetchRuns = async () => {
+    try {
+      setLoading(true);
+
+      const startIso = startDT ? new Date(startDT).toISOString() : undefined;
+      const endIso = endDT ? new Date(endDT).toISOString() : undefined;
+      const promptIdParam = promptFilter === "__all__" ? undefined : promptFilter;
+
+      console.log("Fetching runs with params:", {
+        clientId,
+        start: startIso,
+        end: endIso,
+        promptId: promptIdParam,
+        page,
+        limit,
+      });
+
+      const resp = await getClientRuns(clientId, {
+        start: startIso,
+        end: endIso,
+        promptId: promptIdParam,
+        page,
+        limit,
+      });
+
+      setRuns(resp.runs || []);
+      setTotal(resp.total || 0);
+
+      // Reset selection when runs load
+      setSelectedRuns(new Set());
+      setSelectAllOnPage(false);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: "Failed to fetch runs",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ============================================================
+     LOAD PROMPTS + RUNS ON FIRST LOAD
+  ============================================================ */
+  useEffect(() => {
+    if (!clientId) return;
+
+    fetchPrompts();  // load prompts once
+    fetchRuns();     // load first page
+  }, [clientId]);
+
+  /* ============================================================
+     Reload runs when page changes
+  ============================================================ */
   useEffect(() => {
     if (!clientId) return;
     fetchRuns();
-  }, [clientId, page]);
+  }, [page]);
 
-
-  // ---------------------------
-  // UI Actions
-  // ---------------------------
+  /* ============================================================
+     UI Actions
+  ============================================================ */
   const toggleSelectRun = (runId) => {
     setSelectedRuns((prev) => {
       const next = new Set(prev);
@@ -764,20 +1486,18 @@ const fetchRuns = async () => {
 
   const handleSelectAllPage = () => {
     if (selectAllOnPage) {
-      setSelectedRuns((prev) => {
-        const next = new Set(prev);
-        runs.forEach((r) => next.delete(String(r.runId)));
-        return next;
-      });
+      setSelectedRuns(new Set());
       setSelectAllOnPage(false);
     } else {
-      setSelectedRuns((prev) => {
-        const next = new Set(prev);
-        runs.forEach((r) => next.add(String(r.runId)));
-        return next;
-      });
+      const ids = runs.map((r) => String(r.runId));
+      setSelectedRuns(new Set(ids));
       setSelectAllOnPage(true);
     }
+  };
+
+  const handleApplyFilters = () => {
+    setPage(1);
+    fetchRuns();
   };
 
   const handleExport = async () => {
@@ -798,16 +1518,13 @@ const fetchRuns = async () => {
       const a = document.createElement("a");
       a.href = url;
       a.download = `runs_export_${clientId}_${Date.now()}.csv`;
-      document.body.appendChild(a);
       a.click();
-      a.remove();
       URL.revokeObjectURL(url);
 
       toast({
         title: "Exported",
         description: "CSV downloaded.",
       });
-
     } catch (err) {
       console.error(err);
       toast({
@@ -820,16 +1537,11 @@ const fetchRuns = async () => {
     }
   };
 
-  const handleApplyFilters = () => {
-    setPage(1);
-    fetchRuns();
-  };
-
   const totalPages = Math.ceil((total || 0) / limit);
 
-  // ---------------------------
-  // Render
-  // ---------------------------
+  /* ============================================================
+     RENDER
+  ============================================================ */
   return (
     <div className="p-6">
       {/* Header */}
@@ -879,13 +1591,9 @@ const fetchRuns = async () => {
             Prompt
           </label>
 
-          {/* FIXED SELECT — no placeholder, no empty values */}
-          <Select
-            value={promptFilter}
-            onValueChange={(v) => setPromptFilter(v)}
-          >
+          <Select value={promptFilter} onValueChange={setPromptFilter}>
             <SelectTrigger className="w-48">
-              <SelectValue />
+              <SelectValue placeholder="Select prompt" />
             </SelectTrigger>
 
             <SelectContent>
@@ -950,7 +1658,6 @@ const fetchRuns = async () => {
                             : "unknown"}
                         </div>
 
-                        {/* FINAL COUNTS ONLY */}
                         <div className="mt-1">
                           CPT:{" "}
                           {Array.isArray(r.finalCptCodes)
