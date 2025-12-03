@@ -473,296 +473,8 @@ export const getClientRuns = async (req, res) => {
  * Body: { runIds: [string], format: "csv" }
  * Exports selected runs (selected by runId) to CSV and returns CSV file.
 //  */
-// export const exportClientRunsCsv = async (req, res) => {
-//   try {
-//     const { clientId } = req.params;
-//     const { runIds } = req.body;
 
-//     if (!Array.isArray(runIds) || runIds.length === 0) {
-//       return res.status(400).json({ error: "runIds (non-empty array) required" });
-//     }
-
-//     const validIds = runIds
-//       .filter((id) => mongoose.Types.ObjectId.isValid(id))
-//       .map((id) => new mongoose.Types.ObjectId(id));
-
-//     if (validIds.length === 0) {
-//       return res.status(400).json({ error: "No valid runIds provided" });
-//     }
-
-//     // Aggregate selected runs
-//     const pipeline = [
-//       { $match: { client: new mongoose.Types.ObjectId(clientId) } },
-//       { $project: { name: 1, llmResults: 1 } },
-//       { $unwind: "$llmResults" },
-//       {
-//         $replaceRoot: {
-//           newRoot: {
-//             $mergeObjects: ["$llmResults", { chartId: "$_id", chartName: "$name" }],
-//           },
-//         },
-//       },
-//       { $match: { _id: { $in: validIds } } },
-//       {
-//         $project: {
-//           runId: "$_id",
-//           chartId: 1,
-//           chartName: 1,
-//           promptId: 1,
-//           promptName: 1,
-//           timestamp: 1,
-//           finalCptCodes: 1,
-//           finalIcdCodes: 1,
-//         },
-//       },
-//     ];
-
-//     const runs = await Chart.aggregate(pipeline);
-
-//     const rows = [];
-
-//     for (const run of runs) {
-//       const finalCpts = Array.isArray(run.finalCptCodes) ? run.finalCptCodes : [];
-//       const finalIcds = Array.isArray(run.finalIcdCodes) ? run.finalIcdCodes : [];
-
-//       // EXPORT ONLY FINAL CPT CODES
-//       finalCpts.forEach((c) => {
-//         rows.push({
-//           runId: String(run.runId),
-//           chartName: run.chartName || "",
-//           promptName: run.promptName || "",
-//           timestamp: run.timestamp || "",
-//           codeType: "CPT",
-//           code: c.code || "",
-//           modifiers: Array.isArray(c.modifiers) ? c.modifiers.join("|") : "",
-//           auditTrail: c.auditTrail || c.audit_trail || "",
-//         });
-//       });
-
-//       // EXPORT ONLY FINAL ICD CODES
-//       finalIcds.forEach((c) => {
-//         rows.push({
-//           runId: String(run.runId),
-//           chartName: run.chartName || "",
-//           promptName: run.promptName || "",
-//           timestamp: run.timestamp || "",
-//           codeType: "ICD",
-//           code: c.code || "",
-//           modifiers: "",
-//           auditTrail: c.auditTrail || c.audit_trail || "",
-//         });
-//       });
-//     }
-
-//     // Convert rows to CSV
-//     const fields = [
-//       "runId",
-//       "chartName",
-//       "promptName",
-//       "timestamp",
-//       "codeType",
-//       "code",
-//       "modifiers",
-//       "auditTrail",
-//     ];
-
-//     const json2csv = new Json2csvParser({ fields });
-//     const csv = json2csv.parse(rows);
-
-//     const filename = `runs_export_${clientId}_${Date.now()}.csv`;
-//     res.header("Content-Type", "text/csv");
-//     res.attachment(filename);
-//     return res.send(csv);
-//   } catch (err) {
-//     console.error("exportClientRunsCsv error:", err);
-//     return res.status(500).json({ error: err.message });
-//   }
-// };
-
-
-
-// Requires: mongoose, Chart model, json2csv, archiver
-// npm install json2csv archiver
-
-
-
-// import ExcelJS from "exceljs";
-// export const exportClientRunsCsv = async (req, res) => {
-//   try {
-//     const { clientId } = req.params;
-//     const { runIds } = req.body;
-
-//     if (!Array.isArray(runIds) || runIds.length === 0) {
-//       return res.status(400).json({ error: "runIds (non-empty array) required" });
-//     }
-
-//     // Avoid deprecated constructor signature by casting to String
-//     const validIds = runIds
-//       .filter((id) => mongoose.Types.ObjectId.isValid(id))
-//       .map((id) => new mongoose.Types.ObjectId(String(id)));
-
-//     if (validIds.length === 0) {
-//       return res.status(400).json({ error: "No valid runIds provided" });
-//     }
-
-//     // Aggregation pipeline similar to your reference (pulls runs for the client)
-//     const pipeline = [
-//       { $match: { client: new mongoose.Types.ObjectId(String(clientId)) } },
-//       { $project: { name: 1, llmResults: 1 } },
-//       { $unwind: "$llmResults" },
-//       {
-//         $replaceRoot: {
-//           newRoot: {
-//             $mergeObjects: ["$llmResults", { chartId: "$_id", chartName: "$name" }],
-//           },
-//         },
-//       },
-//       { $match: { _id: { $in: validIds } } },
-//       {
-//         $project: {
-//           runId: "$_id",
-//           chartId: 1,
-//           chartName: 1,
-//           promptId: 1,
-//           promptName: 1,
-//           timestamp: 1,
-//           llmSuggestions: 1,
-//         },
-//       },
-//     ];
-
-//     const runs = await Chart.aggregate(pipeline).exec();
-
-//     const providers = ["openai", "claude", "gemini"];
-
-//     // Build rows: one row per run
-//     const cptRows = [];
-//     const icdRows = [];
-
-//     for (const run of runs) {
-//       // prepare per-provider cell values
-//       const cptRow = {
-//         runId: String(run.runId),
-//         chartName: run.chartName || "",
-//       };
-//       const icdRow = {
-//         runId: String(run.runId),
-//         chartName: run.chartName || "",
-//       };
-
-//       for (const prov of providers) {
-//         const provObj = run.llmSuggestions?.[prov] || {};
-
-//         const provCpts = Array.isArray(provObj.CPT_Codes) ? provObj.CPT_Codes : [];
-//         const provIcds = Array.isArray(provObj.ICD_Codes) ? provObj.ICD_Codes : [];
-
-//         // CPT provider columns
-//         // if (provCpts.length > 0) {
-//         //   const codes = provCpts.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
-//         //   const descriptions = provCpts.map((c) => (c && c.description ? c.description : ""));
-//         //   cptRow[`${prov}_codes`] = codes.join(", ");
-//         //   cptRow[`${prov}_descriptions`] = JSON.stringify(descriptions);
-//         // } else {
-//         //   cptRow[`${prov}_codes`] = "";
-//         //   cptRow[`${prov}_descriptions`] = JSON.stringify([]);
-//         // }
-//         // CPT provider columns (NO descriptions)
-// if (provCpts.length > 0) {
-//   const codes = provCpts.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
-//   cptRow[`${prov}_codes`] = codes.join(", ");
-// } else {
-//   cptRow[`${prov}_codes`] = "";
-// }
-
-
-//         // ICD provider columns
-//         // if (provIcds.length > 0) {
-//         //   const codes = provIcds.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
-//         //   const descriptions = provIcds.map((c) => (c && c.description ? c.description : ""));
-//         //   icdRow[`${prov}_codes`] = codes.join(", ");
-//         //   icdRow[`${prov}_descriptions`] = JSON.stringify(descriptions);
-//         // } else {
-//         //   icdRow[`${prov}_codes`] = "";
-//         //   icdRow[`${prov}_descriptions`] = JSON.stringify([]);
-//         // }
-//         // ICD provider columns (NO descriptions)
-// if (provIcds.length > 0) {
-//   const codes = provIcds.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
-//   icdRow[`${prov}_codes`] = codes.join(", ");
-// } else {
-//   icdRow[`${prov}_codes`] = "";
-// }
-
-//       }
-
-//       cptRows.push(cptRow);
-//       icdRows.push(icdRow);
-//     }
-
-//     // Create workbook and two sheets (CPT and ICD)
-//     const workbook = new ExcelJS.Workbook();
-
-//     // CPT sheet
-//     const cptSheet = workbook.addWorksheet("CPT");
-
-//     // Define CPT columns: runId, chartName, then for each provider: codes + descriptions
-//     const cptCols = [
-//       { header: "runId", key: "runId", width: 24 },
-//       { header: "chartName", key: "chartName", width: 40 },
-//     ];
-//     for (const prov of providers) {
-//       cptCols.push({ header: `${prov}_codes`, key: `${prov}_codes`, width: 40 });
-//       cptCols.push({ header: `${prov}_descriptions`, key: `${prov}_descriptions`, width: 60 });
-//     }
-//     cptSheet.columns = cptCols;
-
-//     // Add CPT rows
-//     cptRows.forEach((r) => cptSheet.addRow(r));
-
-//     // Optional: format header bold
-//     cptSheet.getRow(1).font = { bold: true };
-
-//     // ICD sheet
-//     const icdSheet = workbook.addWorksheet("ICD");
-
-//     const icdCols = [
-//       { header: "runId", key: "runId", width: 24 },
-//       { header: "chartName", key: "chartName", width: 40 },
-//     ];
-//     for (const prov of providers) {
-//       icdCols.push({ header: `${prov}_codes`, key: `${prov}_codes`, width: 40 });
-//       icdCols.push({ header: `${prov}_descriptions`, key: `${prov}_descriptions`, width: 60 });
-//     }
-//     icdSheet.columns = icdCols;
-
-//     icdRows.forEach((r) => icdSheet.addRow(r));
-//     icdSheet.getRow(1).font = { bold: true };
-
-//     // Write workbook to buffer
-//     const buffer = await workbook.xlsx.writeBuffer();
-
-//     const filename = `runs_export_${clientId}_${Date.now()}.xlsx`;
-//     res.setHeader(
-//       "Content-Type",
-//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-//     );
-//     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-//     return res.send(Buffer.from(buffer));
-//   } catch (err) {
-//     console.error("exportClientRunsXlsx error:", err);
-//     if (!res.headersSent) {
-//       return res.status(500).json({ error: err.message });
-//     }
-//     try { res.end(); } catch (e) {}
-//   }
-// };
-
-
-import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
-import mongoose from "mongoose";
-import Chart from "../models/Chart.js";
-
 export const exportClientRunsCsv = async (req, res) => {
   try {
     const { clientId } = req.params;
@@ -772,6 +484,7 @@ export const exportClientRunsCsv = async (req, res) => {
       return res.status(400).json({ error: "runIds (non-empty array) required" });
     }
 
+    // Avoid deprecated constructor signature by casting to String
     const validIds = runIds
       .filter((id) => mongoose.Types.ObjectId.isValid(id))
       .map((id) => new mongoose.Types.ObjectId(String(id)));
@@ -780,7 +493,7 @@ export const exportClientRunsCsv = async (req, res) => {
       return res.status(400).json({ error: "No valid runIds provided" });
     }
 
-    // Aggregation pipeline
+    // Aggregation pipeline similar to your reference (pulls runs for the client)
     const pipeline = [
       { $match: { client: new mongoose.Types.ObjectId(String(clientId)) } },
       { $project: { name: 1, llmResults: 1 } },
@@ -807,12 +520,15 @@ export const exportClientRunsCsv = async (req, res) => {
     ];
 
     const runs = await Chart.aggregate(pipeline).exec();
+
     const providers = ["openai", "claude", "gemini"];
 
+    // Build rows: one row per run
     const cptRows = [];
     const icdRows = [];
 
     for (const run of runs) {
+      // prepare per-provider cell values
       const cptRow = {
         runId: String(run.runId),
         chartName: run.chartName || "",
@@ -828,48 +544,52 @@ export const exportClientRunsCsv = async (req, res) => {
         const provCpts = Array.isArray(provObj.CPT_Codes) ? provObj.CPT_Codes : [];
         const provIcds = Array.isArray(provObj.ICD_Codes) ? provObj.ICD_Codes : [];
 
-        // CPT codes only (NO descriptions)
-        if (provCpts.length > 0) {
-          const codes = provCpts
-            .map((c) => (c?.code ? String(c.code).trim() : ""))
-            .filter(Boolean);
-          cptRow[`${prov}_codes`] = codes.join(", ");
-        } else {
-          cptRow[`${prov}_codes`] = "";
-        }
+        // CPT provider columns
+        
+if (provCpts.length > 0) {
+  const codes = provCpts.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
+  cptRow[`${prov}_codes`] = codes.join(", ");
+} else {
+  cptRow[`${prov}_codes`] = "";
+}
 
-        // ICD codes only (NO descriptions)
-        if (provIcds.length > 0) {
-          const codes = provIcds
-            .map((c) => (c?.code ? String(c.code).trim() : ""))
-            .filter(Boolean);
-          icdRow[`${prov}_codes`] = codes.join(", ");
-        } else {
-          icdRow[`${prov}_codes`] = "";
-        }
+
+        // ICD provider columns
+       
+if (provIcds.length > 0) {
+  const codes = provIcds.map((c) => (c && c.code ? String(c.code).trim() : "")).filter(Boolean);
+  icdRow[`${prov}_codes`] = codes.join(", ");
+} else {
+  icdRow[`${prov}_codes`] = "";
+}
+
       }
 
       cptRows.push(cptRow);
       icdRows.push(icdRow);
     }
 
-    // Create workbook and sheets
+    // Create workbook and two sheets (CPT and ICD)
     const workbook = new ExcelJS.Workbook();
 
     // CPT sheet
     const cptSheet = workbook.addWorksheet("CPT");
 
+    // Define CPT columns: runId, chartName, then for each provider: codes + descriptions
     const cptCols = [
       { header: "runId", key: "runId", width: 24 },
       { header: "chartName", key: "chartName", width: 40 },
     ];
-
     for (const prov of providers) {
       cptCols.push({ header: `${prov}_codes`, key: `${prov}_codes`, width: 40 });
+      cptCols.push({ header: `${prov}_descriptions`, key: `${prov}_descriptions`, width: 60 });
     }
-
     cptSheet.columns = cptCols;
+
+    // Add CPT rows
     cptRows.forEach((r) => cptSheet.addRow(r));
+
+    // Optional: format header bold
     cptSheet.getRow(1).font = { bold: true };
 
     // ICD sheet
@@ -879,33 +599,30 @@ export const exportClientRunsCsv = async (req, res) => {
       { header: "runId", key: "runId", width: 24 },
       { header: "chartName", key: "chartName", width: 40 },
     ];
-
     for (const prov of providers) {
       icdCols.push({ header: `${prov}_codes`, key: `${prov}_codes`, width: 40 });
+      icdCols.push({ header: `${prov}_descriptions`, key: `${prov}_descriptions`, width: 60 });
     }
-
     icdSheet.columns = icdCols;
+
     icdRows.forEach((r) => icdSheet.addRow(r));
     icdSheet.getRow(1).font = { bold: true };
 
-    // Output file
+    // Write workbook to buffer
     const buffer = await workbook.xlsx.writeBuffer();
-    const filename = `runs_export_${clientId}_${Date.now()}.xlsx`;
 
+    const filename = `runs_export_${clientId}_${Date.now()}.xlsx`;
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-
     return res.send(Buffer.from(buffer));
   } catch (err) {
     console.error("exportClientRunsXlsx error:", err);
     if (!res.headersSent) {
       return res.status(500).json({ error: err.message });
     }
-    try {
-      res.end();
-    } catch {}
+    try { res.end(); } catch (e) {}
   }
 };
