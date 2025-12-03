@@ -1064,7 +1064,7 @@ export default function MultiFileUpload({
       <div className="p-6 border-b bg-white">
         <h2 className="text-lg font-semibold">Upload Files</h2>
         <p className="text-sm text-gray-500">
-          Select multiple PDFs to upload
+          Select multiple PDFs, DOCX or TXT files to upload.
         </p>
       </div>
 
@@ -1095,7 +1095,7 @@ export default function MultiFileUpload({
                 </label>
                 <p className="pl-1">or drag and drop</p>
               </div>
-              <p className="text-xs text-gray-500">PDFs up to 10MB</p>
+              <p className="text-xs text-gray-500">PDF, DOCX, TXT up to 10MB</p>
             </div>
           </div>
         </div>
